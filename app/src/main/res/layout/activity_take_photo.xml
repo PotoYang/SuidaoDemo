@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_take_photo"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context="com.example.wyf.suidaodemo.TakePhotoActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_columnSpan="2"
+                    android:gravity="center"
+                    android:text="选择标段"
+                    android:textSize="18dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Spinner
+                        android:id="@+id/sp_section_1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:entries="@array/section_1"
+                        android:padding="5dp" />
+
+                    <Spinner
+                        android:id="@+id/sp_section_2"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:entries="@array/section_2"
+                        android:padding="5dp" />
+                </LinearLayout>
+
+            </GridLayout>
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_columnSpan="2"
+                    android:gravity="center"
+                    android:text="选择相关隧道"
+                    android:textSize="18dp" />
+
+                <Spinner
+                    android:id="@+id/sp_tunnel"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:entries="@array/tunnels"
+                    android:padding="5dp" />
+
+            </GridLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_rowSpan="2"
+                    android:text="输入里程数:    "
+                    android:textSize="18dp" />
+
+                <EditText
+                    android:id="@+id/et_kilo"
+                    android:layout_width="56dp"
+                    android:layout_height="wrap_content"
+                    android:drawableBottom="@color/black"
+                    android:imeActionLabel="@string/action_sign_in_short"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:padding="5dp"
+                    android:text="km +"
+                    android:textColor="@color/black"
+                    android:textSize="18dp" />
+
+
+                <EditText
+                    android:id="@+id/et_meter"
+                    android:layout_width="56dp"
+                    android:layout_height="wrap_content"
+                    android:drawableBottom="@color/black"
+                    android:imeActionLabel="@string/action_sign_in_short"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:padding="5dp"
+                    android:text="m"
+                    android:textColor="@color/black"
+                    android:textSize="18dp" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/iv_pic"
+                android:layout_width="match_parent"
+                android:layout_height="320dp"
+                android:padding="10dp"
+                android:src="@mipmap/plus" />
+
+
+            <Button
+                android:id="@+id/btn_save_pic"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/big_btn_height"
+                android:text="保存" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

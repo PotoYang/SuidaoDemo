@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="section_1">
+        <item>成渝线</item>
+        <item>京昆线</item>
+        <item>京昆线</item>
+        <item>京九线</item>
+        <item>京沪线</item>
+    </string-array>
+
+    <string-array name="section_2">
+        <item>安岳段</item>
+        <item>石家庄段</item>
+        <item>昆明段</item>
+        <item>郑州段</item>
+        <item>杭州段</item>
+    </string-array>
+
+    <string-array name="tunnels">
+        <item>八达岭隧道</item>
+        <item>二郎山隧道</item>
+        <item>小龙坎隧道</item>
+        <item>小巴山隧道</item>
+    </string-array>
+</resources>

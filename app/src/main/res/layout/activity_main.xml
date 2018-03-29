@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/btn_take_photo"
+        style="@style/MyButtonStyle01"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/Cyan"
+        android:text="拍照" />
+
+    <Button
+        android:id="@+id/btn_manage_photo"
+        style="@style/MyButtonStyle01"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/Gold"
+        android:text="管理" />
+
+    <Button
+        android:id="@+id/btn_search_photo"
+        style="@style/MyButtonStyle01"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/HotPink"
+        android:text="检索" />
+</LinearLayout>
