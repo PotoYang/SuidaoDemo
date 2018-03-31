@@ -5,13 +5,16 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,10 +22,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.example.wyf.suidaodemo.utils.CornersTransform;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,8 +39,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class TakePhotoActivity extends AppCompatActivity {
-    public static final String TAG = "TakePhotoActivity";
+public class MyTakePhotoActivity extends AppCompatActivity {
+    public static final String TAG = "MyTakePhotoActivity";
 
     private static final int REQUEST_CAMERA = 0;
     private static final int REQUEST_STORAGE = 1;
@@ -54,6 +60,9 @@ public class TakePhotoActivity extends AppCompatActivity {
     @BindView(R.id.btn_save_pic)
     Button btn_save_pic;
 
+    String mCurrentPhotoPath = "";
+    public static final int REQUEST_TAKE_PHOTO = 0;
+    File photoFile = null;
 
     //使用三维数组实现列表的三级联动
     private String section_1[] = new String[]{"京昆线", "厦蓉线"};
@@ -84,8 +93,14 @@ public class TakePhotoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_photo);
         layout = findViewById(R.id.ll_take_photo);
-
         ButterKnife.bind(this);
+
+        iv_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchTakePictureIntent1();
+            }
+        });
 
         adapter01 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, section_1);
         sp_section_1.setAdapter(adapter01);
@@ -100,7 +115,7 @@ public class TakePhotoActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 section_1_index = position;
-                adapter02 = new ArrayAdapter<>(TakePhotoActivity.this, android.R.layout.simple_list_item_1, section_2[position]);
+                adapter02 = new ArrayAdapter<>(MyTakePhotoActivity.this, android.R.layout.simple_list_item_1, section_2[position]);
                 sp_section_2.setAdapter(adapter02);
             }
 
@@ -113,7 +128,7 @@ public class TakePhotoActivity extends AppCompatActivity {
         sp_section_2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                adapter03 = new ArrayAdapter<>(TakePhotoActivity.this, android.R.layout.simple_list_item_1, tunnel[section_1_index][position]);
+                adapter03 = new ArrayAdapter<>(MyTakePhotoActivity.this, android.R.layout.simple_list_item_1, tunnel[section_1_index][position]);
                 sp_tunnel.setAdapter(adapter03);
             }
 
@@ -123,6 +138,45 @@ public class TakePhotoActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private File createImageFile() throws IOException {
+        Log.d(TAG, "createImageFile");
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsoluteFile();
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        Log.d(TAG, "createImageFile  image=" + image.getAbsolutePath());
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        Log.d(TAG, "createImageFile  mCurrentPhotoPath=" + mCurrentPhotoPath);
+        return image;
+    }
+
+    private void dispatchTakePictureIntent1() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                photoFile = createImageFile();
+
+                if (photoFile != null) {
+                    Uri photoURI = null;
+                    if (Build.VERSION.SDK_INT >= 24) {
+                        photoURI = FileProvider.getUriForFile(getBaseContext().getApplicationContext(),
+                                "com.example.wyf.suidaodemo.fileprovider", photoFile);
+                    } else {
+                        photoURI = Uri.fromFile(photoFile);
+                    }
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @OnClick(R.id.btn_save_pic)
     public void btn_save_pic_click() {
@@ -140,7 +194,7 @@ public class TakePhotoActivity extends AppCompatActivity {
             requestStoragePermission();
         } else {
 //            storePic();
-            String path = Environment.getExternalStorageDirectory() + File.separator + "images"; //获取路径
+            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsoluteFile().toString(); //获取路径
             String fileName = new Date().getTime() + ".jpg";//定义文件名
             File file = new File(path, fileName);
             if (!file.getParentFile().exists()) {//文件夹不存在
@@ -195,14 +249,14 @@ public class TakePhotoActivity extends AppCompatActivity {
                     .setAction(R.string.ok, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            ActivityCompat.requestPermissions(TakePhotoActivity.this,
+                            ActivityCompat.requestPermissions(MyTakePhotoActivity.this,
                                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                     REQUEST_STORAGE);
                         }
                     })
                     .show();
         } else {
-            ActivityCompat.requestPermissions(TakePhotoActivity.this,
+            ActivityCompat.requestPermissions(MyTakePhotoActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_STORAGE);
         }
@@ -225,14 +279,14 @@ public class TakePhotoActivity extends AppCompatActivity {
                     .setAction(R.string.ok, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            ActivityCompat.requestPermissions(TakePhotoActivity.this,
+                            ActivityCompat.requestPermissions(MyTakePhotoActivity.this,
                                     new String[]{Manifest.permission.CAMERA},
                                     REQUEST_CAMERA);
                         }
                     })
                     .show();
         } else {
-            ActivityCompat.requestPermissions(TakePhotoActivity.this,
+            ActivityCompat.requestPermissions(MyTakePhotoActivity.this,
                     new String[]{Manifest.permission.CAMERA},
                     REQUEST_CAMERA);
         }
@@ -270,45 +324,21 @@ public class TakePhotoActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            if (requestCode == 100) {
-                Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
-//                Bundle bundle = data.getExtras();
-//                if (bundle != null) {
-//                    Bitmap newPic = null;
-//                    Bitmap bitmap = (Bitmap) bundle.get("data");
-//                    if (bitmap != null) {
-//
-//                        try {
-//                            InputStream inputStream = getBaseContext().getResources().getAssets().open("couple.png");
-//                            Bitmap waterMark = BitmapFactory.decodeStream(inputStream);
-//
-//                            int w = bitmap.getWidth();
-//                            int h = bitmap.getHeight();
-//                            int ww = waterMark.getWidth();
-//                            int wh = waterMark.getHeight();
-//
-//                            System.out.println(w + "  " + h + "  " + ww + "  " + wh);
-//
-//                            newPic = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-//                            Canvas canvas = new Canvas(newPic);
-//                            canvas.drawBitmap(bitmap, 0, 0, null);
-//                            canvas.drawBitmap(waterMark, w - ww - 5, h - wh - 5, null);
-//                            canvas.save();
-//                            canvas.restore();
-//
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                        iv_pic.setDrawingCacheEnabled(true);
-//                        iv_pic.setVisibility(View.VISIBLE);
-//                        iv_pic.setImageBitmap(newPic);
-//                        Toast.makeText(this, "" + bitmap.getHeight() + "  " + bitmap.getWidth(), Toast.LENGTH_SHORT).show();
-//                    }
-//                } else {
-//                    Toast.makeText(this, "没得", Toast.LENGTH_SHORT).show();
-//                }
+        Log.d(TAG, "onActivityResult");
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+            if (data != null) {
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    Bitmap imageBitmap = (Bitmap) extras.get("data");
+                    iv_pic.setImageBitmap(imageBitmap);
+                } else {
+                    Log.d(TAG, "no Bitmap return");
+                }
+            } else {
+                Log.d(TAG, "data is null" + "  " + photoFile.getAbsolutePath());
+                Glide.with(this).load(photoFile).override(300, 300)
+                        .transform(new CornersTransform(this)).into(iv_pic);
             }
         }
     }

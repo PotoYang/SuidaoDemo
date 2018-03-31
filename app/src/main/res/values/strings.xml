@@ -20,4 +20,7 @@
     <string name="ok">ok</string>
     <string name="permission_write_storage_rationale">请授予写存储权限</string>
     <string name="permission_available_storage">写存储权限已经获取</string>
+
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
 </resources>

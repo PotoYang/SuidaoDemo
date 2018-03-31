@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    tools:context="com.example.wyf.suidaodemo.TakePhotoActivity">
+    tools:context="com.example.wyf.suidaodemo.MyTakePhotoActivity">
 
     <ScrollView
         android:layout_width="match_parent"
