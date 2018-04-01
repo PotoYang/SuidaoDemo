@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".LoginActivity" />
-        <activity android:name=".MyTakePhotoActivity" />
+        <activity android:name=".picture.MyTakePhotoActivity" />
         <activity android:name=".TakePhotoTestActivity" />
 
     </application>
