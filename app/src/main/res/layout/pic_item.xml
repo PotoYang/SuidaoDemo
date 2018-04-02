@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="200dp"
+    android:background="@drawable/shape_gray_square_bg">
+
+    <android.support.v7.widget.AppCompatImageButton
+        android:id="@+id/btn_delete_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="17dp"
+        android:background="#00000000"
+        android:src="@mipmap/error"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/rv_iv_pic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginTop="48dp"
+        android:scaleType="centerInside"
+        android:src="@mipmap/ic_launcher" />
+
+    <TextView
+        android:id="@+id/rv_tv_pic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginBottom="36dp"
+        android:background="#f7f7f7"
+        android:text="123"
+        android:textSize="16sp" />
+</RelativeLayout>

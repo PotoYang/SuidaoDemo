@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".AppApplication"
@@ -17,6 +20,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="c3bb3a504ee1dd36175f88eb36aaddac"/>
+
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">
@@ -27,9 +34,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".LoginActivity" />
-        <activity android:name=".picture.MyTakePhotoActivity" />
+        <activity
+            android:name=".takepicture.MyTakePhotoActivity"
+            android:windowSoftInputMode="stateHidden" />
         <activity android:name=".TakePhotoTestActivity" />
+        <activity android:name=".showpicture.AmapActivity" />
 
+        <service android:name="com.amap.api.location.APSService" />
     </application>
 
 </manifest>

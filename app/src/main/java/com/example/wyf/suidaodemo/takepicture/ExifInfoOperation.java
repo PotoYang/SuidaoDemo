@@ -1,7 +1,7 @@
-package com.example.wyf.suidaodemo.picture;
+package com.example.wyf.suidaodemo.takepicture;
 
 import android.content.Context;
-import android.media.ExifInterface;
+import android.support.media.ExifInterface;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExifInfoOperation {
+
+    private static final String TAG = ExifInterface.class.getSimpleName();
 
     public static Map<String, String> getExif(String path) {
         Map<String, String> exifInfos = new HashMap<>();
@@ -43,34 +45,31 @@ public class ExifInfoOperation {
                 exifInterface.setAttribute((String) entry.getKey(), (String) entry.getValue());
             }
 
-            String str = GPSInfoProvider.getInstance(context).getLocation();
-            if (str != null && str.length() != 0) {
-                String[] strings = str.split("-");
-                System.out.println(str);
-                String lat = changeToFormat(strings[0]);
-                String lon = changeToFormat(strings[1]);
-                String alt = strings[2] + "/1";
-                exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE, lat);
-                exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, lon);
-                exifInterface.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, alt);
+            String gpsLocation = GPSInfoProvider.getInstance(context).getLocation();
+            Log.i(TAG, gpsLocation);
+            if (gpsLocation != null && gpsLocation.length() != 0) {
+                String[] coordinates = gpsLocation.split("-");
+                String latitude = changeFromgGPSToRational(coordinates[0]);
+                String longitude = changeFromgGPSToRational(coordinates[1]);
+                String altitude = coordinates[2] + "/1";
+                exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitude);
+                exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitude);
+                exifInterface.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, altitude);
             }
             exifInterface.saveAttributes();
-            Log.d("ExifInfoOperation", "Success");
+            Log.d(TAG, "Success");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
-    private static String changeToFormat(String string) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] strings = string.split("\\.");
-        stringBuilder.append(strings[0]).append("/1,");
-        double fen = Double.parseDouble("0." + strings[1]) * 60;
-        stringBuilder.append(Math.round(fen)).append("/1,");
-        double miao = (fen - Math.round(fen)) * 60;
-        stringBuilder.append(Math.round(miao)).append("/1");
-
-        return stringBuilder.toString();
+    private static String changeFromgGPSToRational(String gpsLocation) {
+        double location = Double.parseDouble(gpsLocation);
+        double degrees = Math.floor(location);
+        double minutes = Math.floor((location - degrees) * 60);
+        double seconds = (location - degrees) * 3600 - minutes * 60;
+//        System.out.println(degrees + "/1," + minutes + "/60," + seconds + "/3600");
+        return (degrees + "/1," + minutes + "/60," + seconds + "/3600");
     }
 }

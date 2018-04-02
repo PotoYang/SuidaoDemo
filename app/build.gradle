@@ -29,5 +29,8 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     compile 'com.jph.takephoto:takephoto_library:4.0.3'
-    implementation files('lib/jheader-0.1.jar')
+    compile 'com.amap.api:map2d:latest.integration'
+    compile 'com.amap.api:location:latest.integration'
+    compile 'com.amap.api:search:latest.integration'
+    implementation 'com.android.support:exifinterface:28.0.0-alpha1'
 }

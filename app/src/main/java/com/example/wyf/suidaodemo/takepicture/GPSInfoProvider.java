@@ -1,4 +1,4 @@
-package com.example.wyf.suidaodemo.picture;
+package com.example.wyf.suidaodemo.takepicture;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

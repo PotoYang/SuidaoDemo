@@ -1,4 +1,4 @@
-package com.example.wyf.suidaodemo.picture;
+package com.example.wyf.suidaodemo.takepicture;
 
 import android.content.Context;
 import android.graphics.Bitmap;
