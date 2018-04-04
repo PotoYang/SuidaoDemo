@@ -1,5 +1,6 @@
 package com.example.wyf.suidaodemo.showpicture;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
@@ -17,23 +18,34 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
-import com.amap.api.maps2d.AMap;
-import com.amap.api.maps2d.CameraUpdateFactory;
-import com.amap.api.maps2d.CoordinateConverter;
-import com.amap.api.maps2d.LocationSource;
-import com.amap.api.maps2d.MapView;
-import com.amap.api.maps2d.UiSettings;
-import com.amap.api.maps2d.model.BitmapDescriptor;
-import com.amap.api.maps2d.model.BitmapDescriptorFactory;
-import com.amap.api.maps2d.model.LatLng;
-import com.amap.api.maps2d.model.Marker;
-import com.amap.api.maps2d.model.MarkerOptions;
-import com.amap.api.maps2d.model.MyLocationStyle;
+import com.amap.api.maps.AMap;
+import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.CoordinateConverter;
+import com.amap.api.maps.LocationSource;
+import com.amap.api.maps.MapView;
+import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.BitmapDescriptor;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
+import com.amap.api.maps.model.MultiPointItem;
+import com.amap.api.maps.model.MultiPointOverlay;
+import com.amap.api.maps.model.MultiPointOverlayOptions;
+import com.amap.api.maps.model.MyLocationStyle;
 import com.example.wyf.suidaodemo.R;
+import com.example.wyf.suidaodemo.database.dao.SuidaoInfoDao;
+import com.example.wyf.suidaodemo.database.entity.SuidaoInfoEntity;
 
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -92,12 +104,171 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
         btn_showexif.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(
-                        Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, IMAGE_REQUEST_CODE);
+//                Intent intent = new Intent(
+//                        Intent.ACTION_PICK,
+//                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//                startActivityForResult(intent, IMAGE_REQUEST_CODE);
+                showAllPoint();
             }
         });
+    }
+
+    private void showAllPoint() {
+        showProgressDialog();
+        List<SuidaoInfoEntity> entities = new SuidaoInfoDao(AmapActivity.this).getAll();
+//        Map<Integer, Map<String, String>> points = new SuidaoInfoDao(AmapActivity.this).getAllPoint();
+//        Map<String, String> latLngMap = new HashMap<>();
+//        for (Map.Entry entry : points.entrySet()) {
+//            Map<String, String> a = (Map<String, String>) entry.getValue();
+//        }
+        Log.i(TAG, "Get points");
+        MultiPointOverlayOptions overlayOptions = new MultiPointOverlayOptions();
+        overlayOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.point));//设置图标
+        overlayOptions.anchor(0.5f, 0.5f); //设置锚点
+        MultiPointOverlay multiPointOverlay = aMap.addMultiPointOverlay(overlayOptions);
+        List<MultiPointItem> list = new ArrayList<>();
+        for (SuidaoInfoEntity entity : entities) {
+            double latitude = changeFromgRationalToGPS(entity.getPiclatitude());
+            double longitude = changeFromgRationalToGPS(entity.getPiclongitude());
+            Log.d(TAG, latitude + "  " + longitude);
+            //创建MultiPointItem存放，海量点中某单个点的位置及其他信息
+            MultiPointItem multiPointItem = new MultiPointItem(coordinateConverter(latitude, longitude));
+            multiPointItem.setCustomerId(String.valueOf(entity.getId()));
+            list.add(multiPointItem);
+        }
+        // 将规范化的点集交给海量点管理对象设置，待加载完毕即可看到海量点信息
+//        multiPointOverlay.setItems(list);
+
+        if (multiPointOverlay != null) {
+            multiPointOverlay.setItems(list);
+            multiPointOverlay.setEnable(true);
+        }
+
+        dissmissProgressDialog();
+
+        // 定义海量点点击事件
+        AMap.OnMultiPointClickListener multiPointClickListener = new AMap.OnMultiPointClickListener() {
+            // 海量点中某一点被点击时回调的接口
+            // 返回 true 则表示接口已响应事件，否则返回false
+            @Override
+            public boolean onPointClick(MultiPointItem pointItem) {
+                Intent intent = new Intent(AmapActivity.this, ShowConstructionDetailActivity.class);
+                intent.putExtra("pointId", pointItem.getCustomerId());
+                startActivity(intent);
+                return true;
+//                LatLng latLng = pointItem.getLatLng();
+//                Toast.makeText(AmapActivity.this, latLng.latitude + "  " + latLng.longitude, Toast.LENGTH_SHORT).show();
+//                return true;
+            }
+        };
+        // 绑定海量点点击事件
+        aMap.setOnMultiPointClickListener(multiPointClickListener);
+    }
+
+    private void showAllPointTest() {
+//        Map<String, String> points = new SuidaoInfoDao(AmapActivity.this).getAllPoint();
+//        MultiPointOverlayOptions overlayOptions = new MultiPointOverlayOptions();
+//        overlayOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.point));//设置图标
+//        overlayOptions.anchor(0.5f, 0.5f); //设置锚点
+//        MultiPointOverlay multiPointOverlay = aMap.addMultiPointOverlay(overlayOptions);
+//        List<MultiPointItem> list = new ArrayList<>();
+//        for (Map.Entry entry : points.entrySet()) {
+//            double latitude = changeFromgRationalToGPS((String) entry.getKey());
+//            double longitude = changeFromgRationalToGPS((String) entry.getValue());
+//            Log.d(TAG, latitude + "  " + longitude);
+//
+//            //创建MultiPointItem存放，海量点中某单个点的位置及其他信息
+//            MultiPointItem multiPointItem = new MultiPointItem(coordinateConverter(latitude, longitude));
+//            list.add(multiPointItem);
+//        }
+//        multiPointOverlay.setItems(list);//将规范化的点集交给海量点管理对象设置，待加载完毕即可看到海量点信息
+
+        BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.marker_blue);
+
+        MultiPointOverlayOptions overlayOptions = new MultiPointOverlayOptions();
+        overlayOptions.icon(bitmapDescriptor);
+        overlayOptions.anchor(0.5f, 0.5f);
+        final MultiPointOverlay multiPointOverlay = aMap.addMultiPointOverlay(overlayOptions);
+
+        showProgressDialog();
+        //开启子线程读取文件
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                List<MultiPointItem> list = new ArrayList<MultiPointItem>();
+                String styleName = "style_json.json";
+                FileOutputStream outputStream = null;
+                InputStream inputStream = null;
+                String filePath = null;
+                try {
+                    inputStream = AmapActivity.this.getResources().openRawResource(R.raw.point10w);
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    String line = "";
+                    while ((line = bufferedReader.readLine()) != null) {
+                        String[] str = line.split(",");
+                        if (str == null) {
+                            continue;
+                        }
+                        double lat = Double.parseDouble(str[1].trim());
+                        double lon = Double.parseDouble(str[0].trim());
+
+                        LatLng latLng = new LatLng(lat, lon, false);//保证经纬度没有问题的时候可以填false
+
+                        MultiPointItem multiPointItem = new MultiPointItem(latLng);
+                        list.add(multiPointItem);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (inputStream != null)
+                            inputStream.close();
+
+                        if (outputStream != null)
+                            outputStream.close();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (multiPointOverlay != null) {
+                    multiPointOverlay.setItems(list);
+                    multiPointOverlay.setEnable(true);
+                }
+
+                dissmissProgressDialog();
+
+                //
+            }
+        }).start();
+
+    }
+
+    private ProgressDialog progDialog = null;// 添加海量点时
+
+    /**
+     * 显示进度框
+     */
+    private void showProgressDialog() {
+        if (progDialog == null)
+            progDialog = new ProgressDialog(this);
+        progDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progDialog.setIndeterminate(false);
+        progDialog.setCancelable(true);
+        progDialog.setMessage("正在解析添加海量点中，请稍后...");
+        progDialog.show();
+    }
+
+    /**
+     * 隐藏进度框
+     */
+    private void dissmissProgressDialog() {
+        if (progDialog != null) {
+            progDialog.dismiss();
+        }
     }
 
     private void pictureMark() {
@@ -135,6 +306,9 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
     }
 
     private double changeFromgRationalToGPS(String rationalStr) {
+        if (rationalStr == null) {
+            return 0.0;
+        }
         String[] parts = rationalStr.split(",");
         String[] pair;
 
@@ -150,7 +324,7 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
 
     private LatLng coordinateConverter(double latitude, double longitude) {
         LatLng sourceLatLng = new LatLng(latitude, longitude);
-        CoordinateConverter converter = new CoordinateConverter();
+        CoordinateConverter converter = new CoordinateConverter(this);
         // CoordType.GPS 待转换坐标类型
         converter.from(CoordinateConverter.CoordType.GPS);
         // sourceLatLng待转换坐标点 LatLng类型

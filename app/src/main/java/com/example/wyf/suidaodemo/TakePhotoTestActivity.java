@@ -1,6 +1,8 @@
 package com.example.wyf.suidaodemo;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,15 +14,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.wyf.suidaodemo.database.dao.SuidaoInfoDao;
+import com.example.wyf.suidaodemo.database.entity.SuidaoInfoEntity;
+import com.example.wyf.suidaodemo.receiver.MyGpsReceiver;
+import com.example.wyf.suidaodemo.service.GpsService;
+
 import java.io.IOException;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class TakePhotoTestActivity extends AppCompatActivity {
+public class TakePhotoTestActivity extends AppCompatActivity implements MyGpsReceiver.IBroadcastInteraction {
 
     private static final String TAG = TakePhotoTestActivity.class.getSimpleName();
     private static final int IMAGE_REQUEST_CODE = 100;
@@ -36,6 +45,10 @@ public class TakePhotoTestActivity extends AppCompatActivity {
 
     String path;
 
+    private MyGpsReceiver receiver = null;
+    EditText editText1, editText2;
+
+    String location = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,15 +57,33 @@ public class TakePhotoTestActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
+        editText1 = findViewById(R.id.editText1);
+        editText2 = findViewById(R.id.editText2);
+
+        //注册广播
+        receiver = new MyGpsReceiver();
+        receiver.setBroadcastInteraction(this);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.example.wyf.suidaodemo.service.GpsService");
+        registerReceiver(receiver, filter);
+
 //        initData();
 
         takeFromCameraBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                imageUri = getImageCropUri();
-                //拍照并裁剪
-//                takePhoto.onPickFromCaptureWithCrop(imageUri, cropOptions);
-                //仅仅拍照不裁剪
+                StringBuilder contentBuilder = new StringBuilder();
+
+                // 从数据库中取出全部信息
+                List<SuidaoInfoEntity> entities = new SuidaoInfoDao(TakePhotoTestActivity.this).getAll();
+                if (entities != null) {
+                    for (SuidaoInfoEntity entity : entities) {
+                        System.out.println(entity.toString());
+                    }
+                } else {
+                    System.out.println("Data null");
+                }
+
             }
         });
 
@@ -77,6 +108,30 @@ public class TakePhotoTestActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    //获取广播数据
+//    private class MyReceiver extends BroadcastReceiver {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            Bundle bundle = intent.getExtras();
+//            String lon = bundle.getString("lon");
+//            String lat = bundle.getString("lat");
+//            if (lon != null && !"".equals(lon) && lat != null && !"".equals(lat)) {
+//                editText.setText("目前经纬度:经度：" + lon + "纬度：" + lat);
+//            } else {
+//                editText.setText("目前经纬度:经度：" + lon + "纬度：" + lat);
+//            }
+//        }
+//    }
+
+    @Override
+    protected void onDestroy() {
+        //注销服务
+        unregisterReceiver(receiver);
+        //结束服务，如果想让服务一直运行就注销此句
+//        stopService(new Intent(this, GpsService.class));
+        super.onDestroy();
     }
 
     private void decodeImage(String path) {
@@ -113,67 +168,6 @@ public class TakePhotoTestActivity extends AppCompatActivity {
         return degrees + minutes + seconds;
     }
 
-//    private void showExif(String path) {
-//        Map<String, String> infomap = ExifInfoOperation.getExif(path);
-//        String lat = infomap.get(ExifInterface.TAG_GPS_LATITUDE);
-//        Toast.makeText(this, lat, Toast.LENGTH_SHORT).show();
-//        System.out.println(lat);
-//    }
-
-//    private void changeExif2(String path) {
-//        try {
-////            Rational rational = new Rational();
-//            ExifInterface exifInterface = new ExifInterface(path);
-////            exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE, "22/1");
-//            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, "114/1,11/1,54111328/1000000");
-////            exifInterface.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, "100/1");
-//            exifInterface.saveAttributes();
-////            String lo = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
-////            System.out.println(lo);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
-/*    private void initData() {
-        ////获取TakePhoto实例
-        takePhoto = getTakePhoto();
-        //设置裁剪参数
-//        cropOptions = new CropOptions.Builder().setAspectX(1).setAspectY(1).setWithOwnCrop(false).create();
-        //设置压缩参数
-        compressConfig = new CompressConfig.Builder().setMaxSize(50 * 1024).setMaxPixel(800).create();
-        takePhoto.onEnableCompress(compressConfig, true);  //设置为需要压缩
-    }*/
-
-/*    @Override
-    public void takeSuccess(TResult result) {
-        super.takeSuccess(result);
-        String iconPath = result.getImage().getOriginalPath();
-        //Toast显示图片路径
-        Toast.makeText(this, "imagePath:" + iconPath, Toast.LENGTH_SHORT).show();
-        //Google Glide库 用于加载图片资源
-        Glide.with(this).load(iconPath).into(imageView);
-    }
-
-    @Override
-    public void takeFail(TResult result, String msg) {
-        super.takeFail(result, msg);
-        Toast.makeText(TakePhotoTestActivity.this, "Error:" + msg, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void takeCancel() {
-        super.takeCancel();
-    }*/
-
-//    //获得照片的输出保存Uri
-//    private Uri getImageCropUri() {
-//        File file = new File(Environment.getExternalStorageDirectory(), "/temp/" + System.currentTimeMillis() + ".jpg");
-//        if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
-//        return Uri.fromFile(file);
-//    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -199,5 +193,17 @@ public class TakePhotoTestActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void setLat(String lat) {
+        editText1.setText("纬度:" + lat);
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void setLng(String lng) {
+        editText2.setText("经度" + lng);
     }
 }

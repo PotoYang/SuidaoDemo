@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.wyf.suidaodemo.R;
+import com.example.wyf.suidaodemo.database.entity.PicItemEntity;
 
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
      */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.pic_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.take_picture_item, parent, false);
         return new ViewHolder(view);
     }
 
@@ -72,11 +73,12 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         PicItemEntity picItemEntity = picItemEntities.get(position);
-        String msg = picItemEntity.getMsg();
+        String msg = picItemEntity.getMsg() + position;
         String imagePath = picItemEntity.getImagePath();
 //        holder.iv_pic.setImageResource(R.mipmap.ic_launcher);
 //        Bitmap imageBitmap = picItemEntity.getBitmap();
 //        holder.iv_pic.setImageBitmap(imageBitmap);
+        // 使用Glide的这种方法类似于在异步加载图片，所以有时候需要过一会才能加载出来
         Glide.with(context).load(imagePath).asBitmap().into(holder.iv_pic);
         holder.tv_pic.setText(msg);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -84,14 +86,6 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
             public void onClick(View v) {
                 int position = holder.getAdapterPosition();
                 Toast.makeText(v.getContext(), "" + position, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                holder.btn_delete_item.setVisibility(View.VISIBLE);
-                return true;
             }
         });
 

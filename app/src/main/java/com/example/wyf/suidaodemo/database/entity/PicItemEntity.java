@@ -1,4 +1,4 @@
-package com.example.wyf.suidaodemo.takepicture;
+package com.example.wyf.suidaodemo.database.entity;
 
 import java.io.Serializable;
 
@@ -27,5 +27,12 @@ public class PicItemEntity implements Serializable {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    @Override
+    public String toString() {
+        return "{msg='" + msg + '\'' +
+                ",imagePath='" + imagePath + '\'' +
+                "}";
     }
 }

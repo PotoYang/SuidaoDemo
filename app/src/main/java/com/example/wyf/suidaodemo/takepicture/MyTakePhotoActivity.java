@@ -1,6 +1,8 @@
 package com.example.wyf.suidaodemo.takepicture;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,12 +11,14 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,7 +36,11 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.example.wyf.suidaodemo.MainActivity;
 import com.example.wyf.suidaodemo.R;
+import com.example.wyf.suidaodemo.database.dao.SuidaoInfoDao;
+import com.example.wyf.suidaodemo.database.entity.PicItemEntity;
+import com.example.wyf.suidaodemo.database.entity.SuidaoInfoEntity;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -54,10 +62,12 @@ import static java.io.File.createTempFile;
 public class MyTakePhotoActivity extends AppCompatActivity {
     public static final String TAG = MyTakePhotoActivity.class.getSimpleName();
 
-    @BindView(R.id.sp_section_1)
-    Spinner sp_section_1;
-    @BindView(R.id.sp_section_2)
-    Spinner sp_section_2;
+    MainActivity mainActivity = new MainActivity();
+
+    @BindView(R.id.sp_line)
+    Spinner sp_line;
+    @BindView(R.id.sp_section)
+    Spinner sp_section;
     @BindView(R.id.sp_tunnel)
     Spinner sp_tunnel;
     @BindView(R.id.et_kilo)
@@ -77,8 +87,9 @@ public class MyTakePhotoActivity extends AppCompatActivity {
     File photoFile = null;
 
     //使用三维数组实现列表的三级联动
-    private String section_1[] = new String[]{"京昆线", "厦蓉线"};
-    private String section_2[][] =
+    //使用三维数组实现列表的三级联动
+    private String line[] = new String[]{"京昆线", "厦蓉线"};
+    private String section[][] =
             {
                     {"北京段", "河北段", "河南段", "陕西段", "四川段", "云南段"},
                     {"四川段", "重庆段", "湖北段", "安徽段", "浙江段", "上海段"}
@@ -94,12 +105,10 @@ public class MyTakePhotoActivity extends AppCompatActivity {
                             {"八达岭隧道", "香山隧道"}, {"李家山隧道", "邯郸坡隧道"}, {"李隧道", "邯郸坡隧道"}
                     }
             };
-
-    ArrayAdapter<String> adapter01, adapter02, adapter03;
-    private int section_1_index;
+    ArrayAdapter<String> lineAdapter, sectionAdapter, tunnelAdapter;
+    private int line_index;
     private static Map<String, String> oldExifInfos;
 
-    //    List<String> tempData = new ArrayList<>();
     List<PicItemEntity> picItemEntities = new ArrayList<>();
     PicRecyclerAdapter adapter;
 
@@ -110,44 +119,9 @@ public class MyTakePhotoActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-//        getData();
-        initData();
+        init();
 
-        adapter01 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, section_1);
-        sp_section_1.setAdapter(adapter01);
-
-        adapter02 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, section_2[0]);
-        sp_section_2.setAdapter(adapter02);
-
-        adapter03 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tunnel[0][0]);
-        sp_tunnel.setAdapter(adapter03);
-
-        sp_section_1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                section_1_index = position;
-                adapter02 = new ArrayAdapter<>(MyTakePhotoActivity.this, android.R.layout.simple_list_item_1, section_2[position]);
-                sp_section_2.setAdapter(adapter02);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        sp_section_2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                adapter03 = new ArrayAdapter<>(MyTakePhotoActivity.this, android.R.layout.simple_list_item_1, tunnel[section_1_index][position]);
-                sp_tunnel.setAdapter(adapter03);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
+        threeCascades();
 
         iv_pic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,23 +133,105 @@ public class MyTakePhotoActivity extends AppCompatActivity {
         btn_save_pic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                adapter.deleteItem(0);
+
+                StringBuilder paths = new StringBuilder();
+                if (picItemEntities.size() != 0) {
+                    for (PicItemEntity entity : picItemEntities) {
+                        paths.append(entity.getImagePath()).append(",");
+                    }
+                }
+                System.out.println(paths);
+
+                SuidaoInfoEntity infoEntity = new SuidaoInfoEntity();
+                infoEntity.setLine(sp_line.getSelectedItem().toString());
+                infoEntity.setSection(sp_section.getSelectedItem().toString());
+                infoEntity.setTunnel(sp_tunnel.getSelectedItem().toString());
+                infoEntity.setKilo(Integer.parseInt(et_kilo.getText().toString()));
+                infoEntity.setMeter(Integer.parseInt(et_meter.getText().toString()));
+                infoEntity.setPicpath(paths.toString());
+
+                Log.d(TAG, oldExifInfos.get(ExifInterface.TAG_GPS_LATITUDE) + "  "
+                        + oldExifInfos.get(ExifInterface.TAG_GPS_LONGITUDE));
+
+                infoEntity.setPiclatitude(oldExifInfos.get(ExifInterface.TAG_GPS_LATITUDE));
+                infoEntity.setPiclongitude(oldExifInfos.get(ExifInterface.TAG_GPS_LONGITUDE));
+                @SuppressLint("SimpleDateFormat")
+                String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                infoEntity.setCreatetime(timeStamp);
+
+                new SuidaoInfoDao(MyTakePhotoActivity.this).insert(infoEntity);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MyTakePhotoActivity.this);
+                builder.setTitle("保存成功");
+                builder.setMessage("是否继续添加?");
+                builder.setPositiveButton("继续添加", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        et_kilo.setText("");
+                        et_meter.setText("");
+                        while (picItemEntities.size() != 0) {
+                            adapter.deleteItem(picItemEntities.size() - 1);
+                        }
+                        picItemEntities.clear();
+                    }
+                });
+                builder.setNegativeButton("退出添加", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+                builder.show();
             }
         });
     }
 
-//    private void getData() {
-//        PicItemEntity picItemEntity = new PicItemEntity("First", "123");
-//        picItemEntities.add(picItemEntity);
-//    }
+    private void threeCascades() {
+        lineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, line);
+        sp_line.setAdapter(lineAdapter);
 
-    private void initData() {
+        sectionAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, section[0]);
+        sp_section.setAdapter(sectionAdapter);
+
+        tunnelAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tunnel[0][0]);
+        sp_tunnel.setAdapter(tunnelAdapter);
+
+        sp_line.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                line_index = position;
+                sectionAdapter = new ArrayAdapter<>(MyTakePhotoActivity.this, android.R.layout.simple_list_item_1, section[position]);
+                sp_section.setAdapter(sectionAdapter);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        sp_section.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                tunnelAdapter = new ArrayAdapter<>(MyTakePhotoActivity.this, android.R.layout.simple_list_item_1, tunnel[line_index][position]);
+                sp_tunnel.setAdapter(tunnelAdapter);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
+
+    private void init() {
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         rv_pictures.setLayoutManager(manager);
         adapter = new PicRecyclerAdapter(this, picItemEntities);
         rv_pictures.setAdapter(adapter);
         rv_pictures.setItemAnimator(new DefaultItemAnimator());
+
     }
 
     private void openCamera() {
@@ -240,10 +296,7 @@ public class MyTakePhotoActivity extends AppCompatActivity {
             }
 
             // 插入exif信息
-            ExifInfoOperation.insertExif(this, oldExifInfos, photoFile.getAbsolutePath());
-
-            // 重新加载图片
-//            Glide.with(this).load(photoFile).override(180, 200).into(iv_pic);
+            oldExifInfos = ExifInfoOperation.insertExif(this, oldExifInfos, photoFile.getAbsolutePath());
 
             // 保存缩略图
             File finalFile = null;
@@ -275,26 +328,17 @@ public class MyTakePhotoActivity extends AppCompatActivity {
                     });
 
 //            System.gc();
+
             // 保存图片后发送广播通知更新数据库
             Uri uri = Uri.fromFile(photoFile);
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
 
-//            File file = new File(photoFile.getParent() + "/thumbnail/thumbnail_" + photoFile.getName());
-
             System.out.println(photoFile.getParent() + "/thumbnail/thumbnail_" + photoFile.getName());
 
-//            try {
-//                Bitmap future =
-//                        Glide.with(this).load(photoFile).asBitmap().thumbnail(0.01f).into(100, 100).get();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            } catch (ExecutionException e) {
-//                e.printStackTrace();
-//            }
 
             PicItemEntity entity = null;
 
-            entity = new PicItemEntity("Thumb" + picItemEntities.size(),
+            entity = new PicItemEntity("Thumb_",
                     photoFile.getParent() + "/thumbnail/thumbnail_" + photoFile.getName());
             adapter.addItem(picItemEntities.size() - 1, entity);
         } else {
@@ -354,5 +398,29 @@ public class MyTakePhotoActivity extends AppCompatActivity {
         Matrix matrix = new Matrix();
         matrix.postScale(0.1f, 0.1f); //长和宽放大缩小的比例
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    private ProgressDialog progDialog = null;
+
+    /**
+     * 显示进度框
+     */
+    private void showProgressDialog() {
+        if (progDialog == null)
+            progDialog = new ProgressDialog(this);
+        progDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progDialog.setIndeterminate(false);
+        progDialog.setCancelable(true);
+        progDialog.setMessage("正在搜索GPS...");
+        progDialog.show();
+    }
+
+    /**
+     * 隐藏进度框
+     */
+    private void dissmissProgressDialog() {
+        if (progDialog != null) {
+            progDialog.dismiss();
+        }
     }
 }

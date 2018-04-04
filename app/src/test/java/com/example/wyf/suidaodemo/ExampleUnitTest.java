@@ -1,9 +1,17 @@
 package com.example.wyf.suidaodemo;
 
+import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.test.mock.MockContext;
+
 import com.amap.api.maps2d.CoordinateConverter;
 import com.amap.api.maps2d.model.LatLng;
+import com.example.wyf.suidaodemo.database.dao.SuidaoInfoDao;
+import com.example.wyf.suidaodemo.database.entity.SuidaoInfoEntity;
 
 import org.junit.Test;
+
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 
@@ -68,5 +76,37 @@ public class ExampleUnitTest {
         LatLng desLatLng = converter.convert();
 
         System.out.println(desLatLng.latitude + "  " + desLatLng.longitude);
+    }
+
+    @Test
+    public void databaseTest() {
+        Context context = new MockContext();
+        StringBuilder contentBuilder = new StringBuilder();
+//        / 添加用户数据
+//        UserBean userData = new UserBean("张三", '1', new Date(), "北京");
+//        new UserDao(MainActivity.this).insert(userData);
+
+        SuidaoInfoEntity entity = new SuidaoInfoEntity();
+        entity.setLine("京昆线");
+        entity.setSection("河北段");
+        entity.setTunnel("西柏坡隧道");
+        entity.setKilo(300);
+        entity.setMeter(123);
+        entity.setPicpath("123");
+
+        // 从数据库中根据ID取出文章信息
+        SuidaoInfoEntity articleBean = new SuidaoInfoDao(context).queryById(1);
+        contentBuilder.append(articleBean.toString());
+
+        System.out.println(contentBuilder);
+
+    }
+
+    @Test
+    public void test05(){
+        String str = "/storage/emulated/0/suidao/thumbnail/thumbnail_20180404_171302_2766222343965243871.jpg";
+        String[] result = str.split("thumbnail");
+        BitmapFactory.decodeFile(result[0] + result[2].substring(1, result[2].length()));
+        System.out.println(result[0] + result[2].substring(1, result[2].length()));
     }
 }

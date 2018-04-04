@@ -22,7 +22,7 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="c3bb3a504ee1dd36175f88eb36aaddac"/>
+            android:value="c3bb3a504ee1dd36175f88eb36aaddac" />
 
         <activity
             android:name=".MainActivity"
@@ -39,8 +39,16 @@
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".TakePhotoTestActivity" />
         <activity android:name=".showpicture.AmapActivity" />
+        <activity android:name=".showpicture.ShowConstructionDetailActivity" />
+        <activity android:name=".showpicture.ShowOnePictureActivity" />
+        <activity android:name=".managepicture.ShowPictureFolderByDayActivity" />
+        <activity android:name=".managepicture.ShowPictureFolderByConstrctionActivity" />
 
         <service android:name="com.amap.api.location.APSService" />
+
+        <service
+            android:name=".service.GpsService"
+            android:label="GPS Service" />
     </application>
 
 </manifest>

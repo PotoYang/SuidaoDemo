@@ -9,4 +9,5 @@
     <color name="HotPink">#ef7ac7</color>
     <color name="Gold">#F4D153</color>
     <color name="black">#000000</color>
+    <color name="black_alpha_6">#a7000000</color>
 </resources>

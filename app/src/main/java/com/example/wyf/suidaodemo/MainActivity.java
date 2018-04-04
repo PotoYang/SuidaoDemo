@@ -4,33 +4,44 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.amap.api.maps2d.AMap;
-import com.amap.api.maps2d.model.Marker;
+import com.example.wyf.suidaodemo.managepicture.ShowPictureFolderByDayActivity;
+import com.example.wyf.suidaodemo.service.GpsService;
 import com.example.wyf.suidaodemo.showpicture.AmapActivity;
 import com.example.wyf.suidaodemo.takepicture.MyTakePhotoActivity;
 import com.example.wyf.suidaodemo.utils.PermissionUtils;
 
 import java.util.Arrays;
+import java.util.Objects;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    private Button btn_take_photo, btn_manage_photo, btn_search_photo;
+    @BindView(R.id.btn_take_photo)
+    Button btn_take_photo;
+    @BindView(R.id.btn_manage_photo)
+    Button btn_manage_photo;
+    @BindView(R.id.btn_search_photo)
+    Button btn_search_photo;
 
     // 相机权限、多个权限
     private final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
             , Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA
             , Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION
-            , Manifest.permission.INTERNET};
+            , Manifest.permission.INTERNET, Manifest.permission.READ_PHONE_STATE};
 
     // 打开相机请求Code，多个权限请求Code
     private final int REQUEST_CODE_CAMERA = 1, REQUEST_CODE_PERMISSIONS = 2;
@@ -41,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         mContext = this;
 
@@ -48,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         PermissionUtils.checkMorePermissions(this, PERMISSIONS, new PermissionUtils.PermissionCheckCallBack() {
             @Override
             public void onHasPermission() {
+
             }
 
             @Override
@@ -66,9 +79,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        init();
-
         btn_take_photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,7 +91,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 //                Intent intent = new Intent(MainActivity.this, AmapActivity.class);
-                Intent intent = new Intent(MainActivity.this, TakePhotoTestActivity.class);
+//                Intent intent = new Intent(MainActivity.this, TakePhotoTestActivity.class);
+                Intent intent = new Intent(MainActivity.this, ShowPictureFolderByDayActivity.class);
                 startActivity(intent);
             }
         });
@@ -94,13 +105,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-    }
-
-    private void init() {
-        btn_take_photo = findViewById(R.id.btn_take_photo);
-        btn_manage_photo = findViewById(R.id.btn_manage_photo);
-        btn_search_photo = findViewById(R.id.btn_search_photo);
     }
 
     /**
@@ -161,4 +165,43 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+//        checkGps();
+        super.onResume();
+    }
+
+    private void checkGps() {
+        //判断GPS是否可用
+        if (!isGpsEnabled((LocationManager) Objects.requireNonNull(getSystemService(Context.LOCATION_SERVICE)))) {
+            new android.app.AlertDialog.Builder(MainActivity.this)
+                    .setTitle("GSP当前已禁用，请在您的系统设置中启动.")
+                    .setMessage("必须启动GPS,才能正常使用该App.")
+                    .setPositiveButton("去启动GPS", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(callGPSSettingIntent);
+                        }
+                    })
+                    .setNegativeButton("退出", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .setCancelable(false)
+                    .show();
+        } else {
+            //启动服务
+            startService(new Intent(MainActivity.this, GpsService.class));
+            Log.i(TAG, "MyGps 定位服务已启动");
+        }
+    }
+
+    private boolean isGpsEnabled(LocationManager locationManager) {
+        boolean isOpenGPS = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+        boolean isOpenNetwork = locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
+        return isOpenGPS || isOpenNetwork;
+    }
 }
