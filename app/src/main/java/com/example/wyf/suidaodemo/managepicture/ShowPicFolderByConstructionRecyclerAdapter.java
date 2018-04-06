@@ -1,5 +1,6 @@
 package com.example.wyf.suidaodemo.managepicture;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
@@ -10,17 +11,18 @@ import android.widget.TextView;
 
 import com.example.wyf.suidaodemo.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ShowPicFolderByDayRecyclerAdapter extends RecyclerView.Adapter<ShowPicFolderByDayRecyclerAdapter.GridViewHolder> {
+public class ShowPicFolderByConstructionRecyclerAdapter extends RecyclerView.Adapter<ShowPicFolderByConstructionRecyclerAdapter.GridViewHolder> {
 
     private Context context;
-    private ArrayList<String> folderNames = new ArrayList<>();
+    private List<String> ids;
+    private List<String> names;
 
-    ShowPicFolderByDayRecyclerAdapter(Context context, List<String> folderNames) {
+    ShowPicFolderByConstructionRecyclerAdapter(Context context, List<String> ids, List<String> names) {
         this.context = context;
-        this.folderNames.addAll(folderNames);
+        this.names = names;
+        this.ids = ids;
     }
 
     @Override
@@ -29,14 +31,16 @@ public class ShowPicFolderByDayRecyclerAdapter extends RecyclerView.Adapter<Show
         return new GridViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(GridViewHolder holder, final int position) {
-        holder.tv.setText(folderNames.get(position));
+        holder.tv.setText(names.get(position) + "+" + ids.get(position));
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, ShowPictureFolderByConstructionActivity.class);
-                intent.putExtra("time", folderNames.get(position).replace(".", "-"));
+                Intent intent = new Intent(context, ManagePicActivity.class);
+                intent.putExtra("constructionid", ids.get(position));
+                intent.putExtra("tunnelname", names.get(position));
                 context.startActivity(intent);
             }
         });
@@ -59,7 +63,7 @@ public class ShowPicFolderByDayRecyclerAdapter extends RecyclerView.Adapter<Show
 
     @Override
     public int getItemCount() {
-        return folderNames.size();
+        return ids.size();
     }
 
     class GridViewHolder extends RecyclerView.ViewHolder {

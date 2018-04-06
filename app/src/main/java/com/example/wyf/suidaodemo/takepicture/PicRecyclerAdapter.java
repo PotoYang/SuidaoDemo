@@ -36,16 +36,8 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
         }
     }
 
-    /**
-     * 用于把要展示的数据源传进来，并赋值给一个全局变量mFruitList，我们后续的操作都将在这个数据源的基础上进行。
-     *
-     * @param picItemEntities
-     */
-    public PicRecyclerAdapter(List<PicItemEntity> picItemEntities) {
-        this.picItemEntities = picItemEntities;
-    }
 
-    public PicRecyclerAdapter(Context context, List<PicItemEntity> picItemEntities) {
+    PicRecyclerAdapter(Context context, List<PicItemEntity> picItemEntities) {
         this.context = context;
         this.picItemEntities = picItemEntities;
     }

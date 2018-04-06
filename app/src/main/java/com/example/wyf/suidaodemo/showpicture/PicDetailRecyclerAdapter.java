@@ -19,35 +19,21 @@ public class PicDetailRecyclerAdapter extends RecyclerView.Adapter<PicDetailRecy
     private Context context;
     private ArrayList<String> urls = new ArrayList<>();
     private LayoutInflater inflater;
-//    private PopupWindow popupView;
 
     PicDetailRecyclerAdapter(Context context, List<String> strings) {
         this.context = context;
-//        inflater =
         this.urls.addAll(strings);
     }
 
     @Override
     public GridViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.detail_picture_item, parent, false);
-//        View popView = LayoutInflater.from(context).inflate(R.layout.popwindow_recyclerview_layout, parent, false);
-//        popupView = new PopupWindow(popView, ViewGroup.LayoutParams.WRAP_CONTENT,
-//                ViewGroup.LayoutParams.WRAP_CONTENT, true);
-//        popupView.setTouchable(true);
-//        popupView.setOutsideTouchable(true);
-//        popupView.setBackgroundDrawable(new BitmapDrawable(context.getResources(), (Bitmap) null));
+
         return new GridViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(GridViewHolder holder, final int position) {
-
-        System.out.println(urls.get(position));
-
-
-//        imageView.setImageBitmap(BitmapFactory.decodeFile(
-//                result[0] + result[2].substring(1, result[2].length())));
-
         Glide.with(context).load(urls.get(position))
                 .asBitmap().placeholder(R.mipmap.ic_launcher)
                 .error(R.mipmap.ic_launcher)

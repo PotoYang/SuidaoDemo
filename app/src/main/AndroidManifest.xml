@@ -42,7 +42,8 @@
         <activity android:name=".showpicture.ShowConstructionDetailActivity" />
         <activity android:name=".showpicture.ShowOnePictureActivity" />
         <activity android:name=".managepicture.ShowPictureFolderByDayActivity" />
-        <activity android:name=".managepicture.ShowPictureFolderByConstrctionActivity" />
+        <activity android:name=".managepicture.ShowPictureFolderByConstructionActivity" />
+        <activity android:name=".managepicture.ManagePicActivity" />
 
         <service android:name="com.amap.api.location.APSService" />
 

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class SuidaoInfoDao {
 
@@ -93,7 +94,7 @@ public class SuidaoInfoDao {
         return null;
     }
 
-    public String getImagePathById(int id) {
+    public String getImagePathById(String id) {
         try {
             String[] path = {""};
             GenericRawResults<String[]> imagesPath =
@@ -122,5 +123,30 @@ public class SuidaoInfoDao {
             e.printStackTrace();
         }
         return folderNames;
+    }
+
+    public Map<Integer, String> getFolderNameByConstruction(String time) {
+        Map<Integer, String> folderNames = new TreeMap<>();
+        try {
+            GenericRawResults<String[]> results =
+                    dao.queryRaw("select id,tunnel from suidaoinfo where date(createtime)=" +
+                            "date('" + time + "') order by id asc");
+            for (String[] result : results) {
+                folderNames.put(Integer.parseInt(result[0]), result[1]);
+            }
+            return folderNames;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return folderNames;
+    }
+
+    public int updateImagesPathById(String newImagesPath, String id) {
+        try {
+            return dao.updateRaw("update suidaoinfo set picpath=? where id=?", newImagesPath, id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
