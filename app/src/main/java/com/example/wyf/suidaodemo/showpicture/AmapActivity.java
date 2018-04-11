@@ -37,11 +37,7 @@ import com.example.wyf.suidaodemo.R;
 import com.example.wyf.suidaodemo.database.dao.SuidaoInfoDao;
 import com.example.wyf.suidaodemo.database.entity.SuidaoInfoEntity;
 
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,26 +46,27 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * 高德地图显示界面
+ */
 public class AmapActivity extends AppCompatActivity implements LocationSource, AMapLocationListener {
 
     private static final String TAG = AmapActivity.class.getSimpleName();
     private static final int IMAGE_REQUEST_CODE = 100;
 
-    @BindView(R.id.map)
-    MapView mMapView;
-    @BindView(R.id.btn_showexif)
-    Button btn_showexif;
-
     AMapLocationClient mLocationClient;
     AMapLocationClientOption mLocationOption;
     MyLocationStyle myLocationStyle;
     OnLocationChangedListener mListener;
+    private ProgressDialog progDialog = null;
     boolean isFirstLoc = true;
     AMap aMap;
-
-    private Uri imageUri;  //图片保存路径
     String path;
 
+    @BindView(R.id.map)
+    MapView mMapView;
+    @BindView(R.id.btn_showexif)
+    Button btn_showexif;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,8 +75,7 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
 
         ButterKnife.bind(this);
 
-        //获取地图控件引用
-        //在activity执行onCreate时执行mMapView.onCreate(savedInstanceState)，实现地图生命周期管理
+        // 获取地图控件引用
         mMapView.onCreate(savedInstanceState);
         if (aMap == null) {
             aMap = mMapView.getMap();
@@ -104,10 +100,7 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
         btn_showexif.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(
-//                        Intent.ACTION_PICK,
-//                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//                startActivityForResult(intent, IMAGE_REQUEST_CODE);
+                // 显示项目在地图上的位置
                 showAllPoint();
             }
         });
@@ -116,34 +109,26 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
     private void showAllPoint() {
         showProgressDialog();
         List<SuidaoInfoEntity> entities = new SuidaoInfoDao(AmapActivity.this).getAll();
-//        Map<Integer, Map<String, String>> points = new SuidaoInfoDao(AmapActivity.this).getAllPoint();
-//        Map<String, String> latLngMap = new HashMap<>();
-//        for (Map.Entry entry : points.entrySet()) {
-//            Map<String, String> a = (Map<String, String>) entry.getValue();
-//        }
         Log.i(TAG, "Get points");
         MultiPointOverlayOptions overlayOptions = new MultiPointOverlayOptions();
         overlayOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.point));//设置图标
         overlayOptions.anchor(0.5f, 0.5f); //设置锚点
         MultiPointOverlay multiPointOverlay = aMap.addMultiPointOverlay(overlayOptions);
         List<MultiPointItem> list = new ArrayList<>();
+        // 生成坐标点
         for (SuidaoInfoEntity entity : entities) {
             double latitude = changeFromgRationalToGPS(entity.getPiclatitude());
             double longitude = changeFromgRationalToGPS(entity.getPiclongitude());
             Log.d(TAG, latitude + "  " + longitude);
-            //创建MultiPointItem存放，海量点中某单个点的位置及其他信息
             MultiPointItem multiPointItem = new MultiPointItem(coordinateConverter(latitude, longitude));
             multiPointItem.setCustomerId(String.valueOf(entity.getId()));
             list.add(multiPointItem);
         }
         // 将规范化的点集交给海量点管理对象设置，待加载完毕即可看到海量点信息
-//        multiPointOverlay.setItems(list);
-
         if (multiPointOverlay != null) {
             multiPointOverlay.setItems(list);
             multiPointOverlay.setEnable(true);
         }
-
         dissmissProgressDialog();
 
         // 定义海量点点击事件
@@ -156,98 +141,11 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
                 intent.putExtra("pointId", pointItem.getCustomerId());
                 startActivity(intent);
                 return true;
-//                LatLng latLng = pointItem.getLatLng();
-//                Toast.makeText(AmapActivity.this, latLng.latitude + "  " + latLng.longitude, Toast.LENGTH_SHORT).show();
-//                return true;
             }
         };
         // 绑定海量点点击事件
         aMap.setOnMultiPointClickListener(multiPointClickListener);
     }
-
-    private void showAllPointTest() {
-//        Map<String, String> points = new SuidaoInfoDao(AmapActivity.this).getAllPoint();
-//        MultiPointOverlayOptions overlayOptions = new MultiPointOverlayOptions();
-//        overlayOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.point));//设置图标
-//        overlayOptions.anchor(0.5f, 0.5f); //设置锚点
-//        MultiPointOverlay multiPointOverlay = aMap.addMultiPointOverlay(overlayOptions);
-//        List<MultiPointItem> list = new ArrayList<>();
-//        for (Map.Entry entry : points.entrySet()) {
-//            double latitude = changeFromgRationalToGPS((String) entry.getKey());
-//            double longitude = changeFromgRationalToGPS((String) entry.getValue());
-//            Log.d(TAG, latitude + "  " + longitude);
-//
-//            //创建MultiPointItem存放，海量点中某单个点的位置及其他信息
-//            MultiPointItem multiPointItem = new MultiPointItem(coordinateConverter(latitude, longitude));
-//            list.add(multiPointItem);
-//        }
-//        multiPointOverlay.setItems(list);//将规范化的点集交给海量点管理对象设置，待加载完毕即可看到海量点信息
-
-        BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.marker_blue);
-
-        MultiPointOverlayOptions overlayOptions = new MultiPointOverlayOptions();
-        overlayOptions.icon(bitmapDescriptor);
-        overlayOptions.anchor(0.5f, 0.5f);
-        final MultiPointOverlay multiPointOverlay = aMap.addMultiPointOverlay(overlayOptions);
-
-        showProgressDialog();
-        //开启子线程读取文件
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                List<MultiPointItem> list = new ArrayList<MultiPointItem>();
-                String styleName = "style_json.json";
-                FileOutputStream outputStream = null;
-                InputStream inputStream = null;
-                String filePath = null;
-                try {
-                    inputStream = AmapActivity.this.getResources().openRawResource(R.raw.point10w);
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                    String line = "";
-                    while ((line = bufferedReader.readLine()) != null) {
-                        String[] str = line.split(",");
-                        if (str == null) {
-                            continue;
-                        }
-                        double lat = Double.parseDouble(str[1].trim());
-                        double lon = Double.parseDouble(str[0].trim());
-
-                        LatLng latLng = new LatLng(lat, lon, false);//保证经纬度没有问题的时候可以填false
-
-                        MultiPointItem multiPointItem = new MultiPointItem(latLng);
-                        list.add(multiPointItem);
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (inputStream != null)
-                            inputStream.close();
-
-                        if (outputStream != null)
-                            outputStream.close();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (multiPointOverlay != null) {
-                    multiPointOverlay.setItems(list);
-                    multiPointOverlay.setEnable(true);
-                }
-
-                dissmissProgressDialog();
-
-                //
-            }
-        }).start();
-
-    }
-
-    private ProgressDialog progDialog = null;// 添加海量点时
 
     /**
      * 显示进度框
@@ -334,23 +232,17 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
 
     private void locationSettings() {
         mLocationClient = new AMapLocationClient(getApplicationContext());
-        //设置定位回调监听，这里要实现AMapLocationListener接口，AMapLocationListener接口只有onLocationChanged方法可以实现，用于接收异步返回的定位结果，参数是AMapLocation类型。
         mLocationClient.setLocationListener(this);
         //初始化定位参数
         mLocationOption = new AMapLocationClientOption();
         mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-        //设置是否返回地址信息（默认返回地址信息）
         mLocationOption.setNeedAddress(true);
-        //设置是否只定位一次,默认为false
         mLocationOption.setOnceLocation(false);
-        //设置是否强制刷新WIFI，默认为强制刷新
         mLocationOption.setWifiActiveScan(true);
-        //设置是否允许模拟位置,默认为false，不允许模拟位置
         mLocationOption.setMockEnable(false);
-        //设置定位间隔,单位毫秒,默认为2000ms
         mLocationOption.setInterval(2000);
-        //给定位客户端对象设置定位参数
         mLocationClient.setLocationOption(mLocationOption);
+
         //启动定位
         mLocationClient.startLocation();
     }
@@ -358,28 +250,24 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
         mMapView.onDestroy();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //在activity执行onResume时执行mMapView.onResume ()，实现地图生命周期管理
         mMapView.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        //在activity执行onPause时执行mMapView.onPause ()，实现地图生命周期管理
         mMapView.onPause();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        //在activity执行onSaveInstanceState时执行mMapView.onSaveInstanceState (outState)现地图生命周期管理
         mMapView.onSaveInstanceState(outState);
     }
 

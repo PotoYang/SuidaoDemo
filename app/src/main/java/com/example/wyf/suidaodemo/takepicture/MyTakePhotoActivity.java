@@ -59,10 +59,11 @@ import butterknife.OnClick;
 
 import static java.io.File.createTempFile;
 
+/**
+ * 拍摄照片界面
+ */
 public class MyTakePhotoActivity extends AppCompatActivity {
     public static final String TAG = MyTakePhotoActivity.class.getSimpleName();
-
-    MainActivity mainActivity = new MainActivity();
 
     @BindView(R.id.sp_line)
     Spinner sp_line;
@@ -83,10 +84,16 @@ public class MyTakePhotoActivity extends AppCompatActivity {
     @BindView(R.id.rv_pictures)
     RecyclerView rv_pictures;
 
-    public static final int REQUEST_TAKE_PHOTO = 0;
-    File photoFile = null;
+    private static final int REQUEST_TAKE_PHOTO = 0;
+    private static Map<String, String> oldExifInfos;
+    private int line_index;
 
-    //使用三维数组实现列表的三级联动
+    private ArrayAdapter<String> lineAdapter, sectionAdapter, tunnelAdapter;
+    private List<PicItemEntity> picItemEntities = new ArrayList<>();
+
+    private File photoFile = null;
+    private PicRecyclerAdapter adapter;
+
     //使用三维数组实现列表的三级联动
     private String line[] = new String[]{"京昆线", "厦蓉线"};
     private String section[][] =
@@ -105,12 +112,6 @@ public class MyTakePhotoActivity extends AppCompatActivity {
                             {"八达岭隧道", "香山隧道"}, {"李家山隧道", "邯郸坡隧道"}, {"李隧道", "邯郸坡隧道"}
                     }
             };
-    ArrayAdapter<String> lineAdapter, sectionAdapter, tunnelAdapter;
-    private int line_index;
-    private static Map<String, String> oldExifInfos;
-
-    List<PicItemEntity> picItemEntities = new ArrayList<>();
-    PicRecyclerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,6 +187,21 @@ public class MyTakePhotoActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * 页面初始化s
+     */
+    private void init() {
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        rv_pictures.setLayoutManager(manager);
+        adapter = new PicRecyclerAdapter(this, picItemEntities);
+        rv_pictures.setAdapter(adapter);
+        rv_pictures.setItemAnimator(new DefaultItemAnimator());
+    }
+
+    /**
+     * 三级联动的具体实现
+     */
     private void threeCascades() {
         lineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, line);
         sp_line.setAdapter(lineAdapter);
@@ -224,23 +240,16 @@ public class MyTakePhotoActivity extends AppCompatActivity {
         });
     }
 
-    private void init() {
-        LinearLayoutManager manager = new LinearLayoutManager(this);
-        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        rv_pictures.setLayoutManager(manager);
-        adapter = new PicRecyclerAdapter(this, picItemEntities);
-        rv_pictures.setAdapter(adapter);
-        rv_pictures.setItemAnimator(new DefaultItemAnimator());
-
-    }
-
+    /**
+     * 打开相机
+     */
     private void openCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         try {
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                // 创建照片文件
                 photoFile = createImageFile();
-
-                //  不同版本获取URI的方式不一样
+                // 不同android版本获取URI的方式不一样
                 Uri photoURI = null;
                 if (Build.VERSION.SDK_INT >= 24) {
                     photoURI = FileProvider.getUriForFile(getBaseContext().getApplicationContext(),
@@ -257,15 +266,18 @@ public class MyTakePhotoActivity extends AppCompatActivity {
     }
 
     private File createImageFile() throws IOException {
+        // 使用日期进行照片的命名
         @SuppressLint("SimpleDateFormat")
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = timeStamp + "_";
+        // 照片存储位置是 根目录/suidao
         File storageDir = new File(Environment.getExternalStorageDirectory(), "/suidao/");
         if (!storageDir.exists()) storageDir.mkdirs();
         return createTempFile(imageFileName, ".jpg", storageDir);
     }
 
     private File createImageThumbnailFile() throws IOException {
+        // 缩略图存放位置是 根目录/suidao/thumbnail
         File file = new File(photoFile.getParent(), "/thumbnail/");
         if (!file.exists()) file.mkdirs();
         file = new File(file.getAbsolutePath() + "/thumbnail_" + photoFile.getName());
@@ -283,7 +295,7 @@ public class MyTakePhotoActivity extends AppCompatActivity {
             // 获取拍摄照片的exif信息，在使用bitmap转换过程中，exif信息会丢失
             oldExifInfos = ExifInfoOperation.getExif(photoFile.getAbsolutePath());
 
-            // 向图片添加水印
+            // 向原图添加水印
             Bitmap bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
             bitmap = addWatermark(bitmap);
             try {
@@ -295,7 +307,7 @@ public class MyTakePhotoActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            // 插入exif信息
+            // 向原图插入exif信息
             oldExifInfos = ExifInfoOperation.insertExif(this, oldExifInfos, photoFile.getAbsolutePath());
 
             // 保存缩略图
@@ -327,9 +339,7 @@ public class MyTakePhotoActivity extends AppCompatActivity {
                         }
                     });
 
-//            System.gc();
-
-            // 保存图片后发送广播通知更新数据库
+            // 保存原图后发送广播通知更新数据库
             Uri uri = Uri.fromFile(photoFile);
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
 
@@ -338,6 +348,7 @@ public class MyTakePhotoActivity extends AppCompatActivity {
 
             PicItemEntity entity = null;
 
+            // 将缩略图加载到预览页面上
             entity = new PicItemEntity("Thumb_",
                     photoFile.getParent() + "/thumbnail/thumbnail_" + photoFile.getName());
             adapter.addItem(picItemEntities.size() - 1, entity);
@@ -357,70 +368,29 @@ public class MyTakePhotoActivity extends AppCompatActivity {
         int w = tarBitmap.getWidth();
         int h = tarBitmap.getHeight();
         Canvas canvas = new Canvas(tarBitmap);
-        //启用抗锯齿和使用设备的文本字距
+        // 启用抗锯齿和使用设备的文本字距
         Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DEV_KERN_TEXT_FLAG);
-        //字体的相关设置
+        // 字体的相关设置
         textPaint.setTextSize(50.0f);//字体大小
         textPaint.setTypeface(Typeface.DEFAULT_BOLD);
         textPaint.setColor(Color.GREEN);
         textPaint.setShadowLayer(3f, 1, 1, Color.GRAY);
-        //图片上添加水印的位置，这里设置的是中下部3/4处
+        // 图片上添加水印内容，水印的位置设置的是中下部3/4处
         canvas.drawText("Ai Fangfang Ai Sing", (float) (w * 0.05), (float) (h * 0.9), textPaint);
         canvas.save(Canvas.ALL_SAVE_FLAG);
         canvas.restore();
         return tarBitmap;
     }
 
-    @OnClick(R.id.btn_save_pic)
-    public void btn_save_pic_click() {
-        // 保存缩略图
-//        Glide.with(this).load(photoFile).asBitmap().into(
-//                new SimpleTarget<Bitmap>() {
-//                    @Override
-//                    public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-//                        try {
-//                            File file = createImageThumbnailFile();
-//                            OutputStream os = new FileOutputStream(file);
-//                            resource = small(resource);
-//                            resource.compress(Bitmap.CompressFormat.JPEG, 100, os);
-//                            os.close();
-//                            // 向缩略图插入exif信息
-//                            ExifInfoOperation.insertExif(MyTakePhotoActivity.this, oldExifInfos, file.getAbsolutePath());
-//                            Toast.makeText(MyTakePhotoActivity.this, "保存Thumbnail成功", Toast.LENGTH_SHORT).show();
-//                        } catch (Exception e) {
-//                            Log.e("TAG", "", e);
-//                        }
-//                    }
-//                });
-    }
-
+    /**
+     * 缩放图片
+     *
+     * @param bitmap
+     * @return
+     */
     private static Bitmap small(Bitmap bitmap) {
         Matrix matrix = new Matrix();
         matrix.postScale(0.1f, 0.1f); //长和宽放大缩小的比例
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
-
-    private ProgressDialog progDialog = null;
-
-    /**
-     * 显示进度框
-     */
-    private void showProgressDialog() {
-        if (progDialog == null)
-            progDialog = new ProgressDialog(this);
-        progDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progDialog.setIndeterminate(false);
-        progDialog.setCancelable(true);
-        progDialog.setMessage("正在搜索GPS...");
-        progDialog.show();
-    }
-
-    /**
-     * 隐藏进度框
-     */
-    private void dissmissProgressDialog() {
-        if (progDialog != null) {
-            progDialog.dismiss();
-        }
     }
 }

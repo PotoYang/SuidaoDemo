@@ -18,6 +18,9 @@ import java.util.Collections;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * 显示施工项目详情界面
+ */
 public class ShowConstructionDetailActivity extends AppCompatActivity {
 
     private static final String TAG = ShowConstructionDetailActivity.class.getSimpleName();

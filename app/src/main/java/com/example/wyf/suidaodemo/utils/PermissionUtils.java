@@ -11,6 +11,9 @@ import android.support.v4.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 权限管理工具类
+ */
 public class PermissionUtils {
 
     /**

@@ -41,6 +41,5 @@ public class ShowOnePictureActivity extends AppCompatActivity {
                         iv_one_picture.setImage(ImageSource.bitmap(resource));
                     }
                 });
-//        iv_one_picture.setOnTouchListener(new MultiTouchPointListener());
     }
 }

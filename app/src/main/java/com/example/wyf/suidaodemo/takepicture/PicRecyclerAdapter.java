@@ -16,12 +16,14 @@ import com.example.wyf.suidaodemo.database.entity.PicItemEntity;
 
 import java.util.List;
 
+/**
+ * 用于动态加载预览图片区域
+ */
 public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.ViewHolder> {
     private List<PicItemEntity> picItemEntities;
     private Context context;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-
         ImageView iv_pic;
         TextView tv_pic;
         AppCompatImageButton btn_delete_item;
@@ -56,8 +58,7 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
     }
 
     /**
-     * 用于对RecyclerView子项的数据进行赋值的，会在每个子项被滚动到屏幕内的时候执行，这里我们通过
-     * position参数得到当前项的Fruit实例，然后再将数据设置到ViewHolder的Imageview和textview当中即可，
+     * 用于对RecyclerView子项的数据进行赋值的，会在每个子项被滚动到屏幕内的时候执行
      *
      * @param holder
      * @param position
@@ -67,9 +68,6 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
         PicItemEntity picItemEntity = picItemEntities.get(position);
         String msg = picItemEntity.getMsg() + position;
         String imagePath = picItemEntity.getImagePath();
-//        holder.iv_pic.setImageResource(R.mipmap.ic_launcher);
-//        Bitmap imageBitmap = picItemEntity.getBitmap();
-//        holder.iv_pic.setImageBitmap(imageBitmap);
         // 使用Glide的这种方法类似于在异步加载图片，所以有时候需要过一会才能加载出来
         Glide.with(context).load(imagePath).asBitmap().into(holder.iv_pic);
         holder.tv_pic.setText(msg);
@@ -81,6 +79,7 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
             }
         });
 
+        // 点击删除按钮删除拍摄的图片
         holder.btn_delete_item.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,6 +93,12 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
         return picItemEntities.size();
     }
 
+    /**
+     * 添加预览的图片
+     *
+     * @param position
+     * @param data
+     */
     public void addItem(int position, PicItemEntity data) {
         picItemEntities.add(data);
         notifyItemChanged(position);
@@ -102,6 +107,11 @@ public class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.
         }
     }
 
+    /**
+     * 删除已经拍摄的图片
+     *
+     * @param position
+     */
     public void deleteItem(int position) {
         if (picItemEntities.size() > 0) {
             picItemEntities.remove(position);

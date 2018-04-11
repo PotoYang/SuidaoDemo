@@ -16,12 +16,9 @@ import java.util.TreeMap;
 
 public class SuidaoInfoDao {
 
-    private Context context;
-    // ORMLite提供的DAO类对象，第一个泛型是要操作的数据表映射成的实体类；第二个泛型是这个实体类中ID的数据类型
     private Dao<SuidaoInfoEntity, Integer> dao;
 
     public SuidaoInfoDao(Context context) {
-        this.context = context;
         try {
             this.dao = DatabaseHelper.getInstance(context).getDao(SuidaoInfoEntity.class);
         } catch (SQLException e) {
@@ -67,6 +64,7 @@ public class SuidaoInfoDao {
         return suidaoInfoEntities;
     }
 
+    // 根据id查询数据
     public SuidaoInfoEntity queryById(int id) {
         SuidaoInfoEntity suidaoInfoEntity = null;
         try {

@@ -26,10 +26,16 @@ import java.util.Objects;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * 首页界面
+ */
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
+    // 这里是控件绑定
+    // 就是与res -> layout -> activity_main.xml中的按钮呀等进行绑定
+    // 用于处理界面上的点击操作，后面能看到的都是一样的原理
     @BindView(R.id.btn_take_photo)
     Button btn_take_photo;
     @BindView(R.id.btn_manage_photo)
@@ -37,16 +43,16 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.btn_search_photo)
     Button btn_search_photo;
 
-    // 相机权限、多个权限
+    // android 6.0 之后需要在运行时动态获取权限
+    // 在此一次性获取多个权限
     private final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
             , Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA
             , Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION
             , Manifest.permission.INTERNET, Manifest.permission.READ_PHONE_STATE};
 
-    // 打开相机请求Code，多个权限请求Code
     private final int REQUEST_CODE_CAMERA = 1, REQUEST_CODE_PERMISSIONS = 2;
 
-    private Context mContext;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mContext = this;
+        context = this;
 
         // 自定义申请多个权限
         PermissionUtils.checkMorePermissions(this, PERMISSIONS, new PermissionUtils.PermissionCheckCallBack() {
@@ -68,17 +74,18 @@ public class MainActivity extends AppCompatActivity {
                 showExplainDialog(permission, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        PermissionUtils.requestMorePermissions(mContext, PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+                        PermissionUtils.requestMorePermissions(context, PERMISSIONS, REQUEST_CODE_PERMISSIONS);
                     }
                 });
             }
 
             @Override
             public void onUserHasAlreadyTurnedDownAndDontAsk(String... permission) {
-                PermissionUtils.requestMorePermissions(mContext, PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+                PermissionUtils.requestMorePermissions(context, PERMISSIONS, REQUEST_CODE_PERMISSIONS);
             }
         });
 
+        // 跳转到拍照界面
         btn_take_photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,21 +94,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 跳转到管理界面
         btn_manage_photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, AmapActivity.class);
-//                Intent intent = new Intent(MainActivity.this, TakePhotoTestActivity.class);
                 Intent intent = new Intent(MainActivity.this, ShowPictureFolderByDayActivity.class);
                 startActivity(intent);
             }
         });
 
+        // 跳转到检索界面
         btn_search_photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, AmapActivity.class);
-//                Intent intent = new Intent(MainActivity.this, TakePhotoTestActivity.class);
                 startActivity(intent);
             }
         });
@@ -111,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
      * 解释权限的dialog
      */
     private void showExplainDialog(String[] permission, DialogInterface.OnClickListener onClickListener) {
-        new AlertDialog.Builder(mContext)
+        new AlertDialog.Builder(context)
                 .setTitle("申请权限")
                 .setMessage("我们需要" + Arrays.toString(permission) + "权限")
                 .setPositiveButton("确定", onClickListener)
@@ -128,12 +134,19 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("前往", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        PermissionUtils.toAppSetting(mContext);
+                        PermissionUtils.toAppSetting(context);
                     }
                 })
                 .setNegativeButton("取消", null).show();
     }
 
+    /**
+     * 获取权限的结果
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -142,23 +155,23 @@ public class MainActivity extends AppCompatActivity {
                     // 权限申请成功
                     return;
                 } else {
-                    Toast.makeText(mContext, "打开相机失败", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "打开相机失败", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case REQUEST_CODE_PERMISSIONS:
-                PermissionUtils.onRequestMorePermissionsResult(mContext, PERMISSIONS, new PermissionUtils.PermissionCheckCallBack() {
+                PermissionUtils.onRequestMorePermissionsResult(context, PERMISSIONS, new PermissionUtils.PermissionCheckCallBack() {
                     @Override
                     public void onHasPermission() {
                     }
 
                     @Override
                     public void onUserHasAlreadyTurnedDown(String... permission) {
-                        Toast.makeText(mContext, "我们需要" + Arrays.toString(permission) + "权限", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "我们需要" + Arrays.toString(permission) + "权限", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onUserHasAlreadyTurnedDownAndDontAsk(String... permission) {
-                        Toast.makeText(mContext, "我们需要" + Arrays.toString(permission) + "权限", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "我们需要" + Arrays.toString(permission) + "权限", Toast.LENGTH_SHORT).show();
                         showToAppSettingDialog();
                     }
                 });
@@ -167,12 +180,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        // 检测gps
 //        checkGps();
         super.onResume();
     }
 
     private void checkGps() {
-        //判断GPS是否可用
+        // 判断GPS是否可用
         if (!isGpsEnabled((LocationManager) Objects.requireNonNull(getSystemService(Context.LOCATION_SERVICE)))) {
             new android.app.AlertDialog.Builder(MainActivity.this)
                     .setTitle("GSP当前已禁用，请在您的系统设置中启动.")
@@ -193,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     .setCancelable(false)
                     .show();
         } else {
-            //启动服务
+            // 启动GPS服务
             startService(new Intent(MainActivity.this, GpsService.class));
             Log.i(TAG, "MyGps 定位服务已启动");
         }

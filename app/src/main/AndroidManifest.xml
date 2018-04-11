@@ -2,14 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.wyf.suidaodemo">
 
+    <!-- 相机权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 存储读写权限 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- 定位权限 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- 联网权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 获取网络状态权限 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- 获取wifi状态权限 -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- 获取手机状态权限 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
@@ -20,6 +27,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- 高德地图配置文件 -->
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="c3bb3a504ee1dd36175f88eb36aaddac" />
@@ -45,11 +53,16 @@
         <activity android:name=".managepicture.ShowPictureFolderByConstructionActivity" />
         <activity android:name=".managepicture.ManagePicActivity" />
 
+        <!-- 高德地图定位服务 -->
         <service android:name="com.amap.api.location.APSService" />
 
+        <!-- GPS定位服务 -->
         <service
             android:name=".service.GpsService"
             android:label="GPS Service" />
+
+        <!-- 文件同步服务 -->
+        <service android:name=".syncpicture.RecordUploadService" />
     </application>
 
 </manifest>

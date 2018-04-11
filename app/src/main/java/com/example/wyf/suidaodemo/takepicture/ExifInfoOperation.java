@@ -10,10 +10,19 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 处理图片的exif信息，即gps信息属于exif信息
+ */
 public class ExifInfoOperation {
 
     private static final String TAG = ExifInterface.class.getSimpleName();
 
+    /**
+     * 获取原图的gps信息
+     *
+     * @param path
+     * @return
+     */
     public static Map<String, String> getExif(String path) {
         Map<String, String> exifInfos = new HashMap<>();
         try {
@@ -37,6 +46,14 @@ public class ExifInfoOperation {
         return exifInfos;
     }
 
+    /**
+     * 向图片插入exif信息
+     *
+     * @param context
+     * @param exifInfos
+     * @param path
+     * @return
+     */
     public static Map<String, String> insertExif(Context context, Map<String, String> exifInfos, String path) {
         try {
             ExifInterface exifInterface = new ExifInterface(path);
@@ -67,6 +84,12 @@ public class ExifInfoOperation {
     }
 
 
+    /**
+     * GPS信息转换，因为存储进exif中需要特定的格式
+     *
+     * @param gpsLocation
+     * @return
+     */
     public static String changeFromgGPSToRational(String gpsLocation) {
         double location = Double.parseDouble(gpsLocation);
         double degrees = Math.floor(location);

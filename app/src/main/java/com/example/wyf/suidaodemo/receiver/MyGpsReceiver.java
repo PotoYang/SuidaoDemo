@@ -16,6 +16,7 @@ public class MyGpsReceiver extends BroadcastReceiver {
             if ("".equals(bundle.getString("lat"))) {
                 Toast.makeText(context, "Bundle exist,data is none!", Toast.LENGTH_SHORT).show();
             } else {
+                // 接收GpsService发送的GPS信息
                 broadcastInteraction.setLat(bundle.getString("lat"));
                 broadcastInteraction.setLng(bundle.getString("lon"));
                 Toast.makeText(context, "Get lat lon!", Toast.LENGTH_SHORT).show();
