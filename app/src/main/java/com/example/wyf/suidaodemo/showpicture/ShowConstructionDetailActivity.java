@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.wyf.suidaodemo.R;
@@ -33,6 +35,10 @@ public class ShowConstructionDetailActivity extends AppCompatActivity {
     TextView tv_detail_createtime;
     @BindView(R.id.rv_detail_picture)
     RecyclerView rv_detail_picture;
+    @BindView(R.id.btn_top_back)
+    Button btn_top_back;
+    @BindView(R.id.tv_top_title)
+    TextView tv_top_title;
 
     private ArrayList<String> urls = new ArrayList<>();
 
@@ -41,6 +47,15 @@ public class ShowConstructionDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_construction_detail);
         ButterKnife.bind(this);
+
+        tv_top_title.setText("工程详情");
+
+        btn_top_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         Intent intent = getIntent();
         String pointId = intent.getStringExtra("pointId");

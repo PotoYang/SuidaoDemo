@@ -11,8 +11,6 @@ import com.example.wyf.suidaodemo.database.entity.SuidaoInfoEntity;
 
 import org.junit.Test;
 
-import java.util.Date;
-
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -103,10 +101,26 @@ public class ExampleUnitTest {
     }
 
     @Test
-    public void test05(){
+    public void test05() {
         String str = "/storage/emulated/0/suidao/thumbnail/thumbnail_20180404_171302_2766222343965243871.jpg";
         String[] result = str.split("thumbnail");
         BitmapFactory.decodeFile(result[0] + result[2].substring(1, result[2].length()));
         System.out.println(result[0] + result[2].substring(1, result[2].length()));
+    }
+
+    @Test
+    public void test06() {
+        String rationalStr = "103/1,58/1,39992065/1000000";
+        String[] parts = rationalStr.split(",");
+        String[] pair;
+
+        pair = parts[0].split("/");
+        double degrees = Double.parseDouble(pair[0].trim()) / Double.parseDouble(pair[1].trim());
+        pair = parts[1].split("/");
+        double minutes = Double.parseDouble(pair[0].trim()) / Double.parseDouble(pair[1].trim());
+        pair = parts[2].split("/");
+        double seconds = Double.parseDouble(pair[0].trim()) / Double.parseDouble(pair[1].trim());
+
+        System.out.println(degrees + minutes + seconds);
     }
 }

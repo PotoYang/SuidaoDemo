@@ -1,7 +1,6 @@
 package com.example.wyf.suidaodemo.takepicture;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -31,12 +30,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.example.wyf.suidaodemo.MainActivity;
 import com.example.wyf.suidaodemo.R;
 import com.example.wyf.suidaodemo.database.dao.SuidaoInfoDao;
 import com.example.wyf.suidaodemo.database.entity.PicItemEntity;
@@ -55,7 +54,6 @@ import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 import static java.io.File.createTempFile;
 
@@ -83,6 +81,10 @@ public class MyTakePhotoActivity extends AppCompatActivity {
     View layout;
     @BindView(R.id.rv_pictures)
     RecyclerView rv_pictures;
+    @BindView(R.id.btn_top_back)
+    Button btn_top_back;
+    @BindView(R.id.tv_top_title)
+    TextView tv_top_title;
 
     private static final int REQUEST_TAKE_PHOTO = 0;
     private static Map<String, String> oldExifInfos;
@@ -128,6 +130,13 @@ public class MyTakePhotoActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openCamera();
+            }
+        });
+
+        btn_top_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
 
@@ -191,6 +200,8 @@ public class MyTakePhotoActivity extends AppCompatActivity {
      * 页面初始化s
      */
     private void init() {
+        tv_top_title.setText("项目拍照");
+
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         rv_pictures.setLayoutManager(manager);

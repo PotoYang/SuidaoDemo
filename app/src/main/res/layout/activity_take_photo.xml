@@ -7,6 +7,8 @@
     android:orientation="vertical"
     tools:context="com.example.wyf.suidaodemo.takepicture.MyTakePhotoActivity">
 
+    <include layout="@layout/top_bar"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

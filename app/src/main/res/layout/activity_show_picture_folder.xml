@@ -5,9 +5,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <include layout="@layout/top_bar" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         tools:ignore="UselessParent">
 
         <LinearLayout
@@ -15,18 +18,19 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btn_sync_pic"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="同步照片" />
-
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_pic_folder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp" />
+
         </LinearLayout>
     </ScrollView>
 
+    <Button
+        android:id="@+id/btn_sync_pic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="130dp"
+        android:text="同步照片" />
 </LinearLayout>

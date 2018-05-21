@@ -32,6 +32,10 @@ public class ManagePicActivity extends AppCompatActivity {
     TextView tv_pic_manage;
     @BindView(R.id.rv_pic_manage)
     RecyclerView rv_pic_manage;
+    @BindView(R.id.btn_top_back)
+    Button btn_top_back;
+    @BindView(R.id.tv_top_title)
+    TextView tv_top_title;
 
     private ArrayList<String> urls = new ArrayList<>();
     PicManageRecyclerAdapter adapter;
@@ -53,6 +57,15 @@ public class ManagePicActivity extends AppCompatActivity {
         String[] imagesPath = path.split(",");
         Collections.addAll(urls, imagesPath);
         initRecyclerView();
+
+        btn_top_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        tv_top_title.setText("项目照片");
 
         btn_store_pic_manage.setOnClickListener(new View.OnClickListener() {
             @Override

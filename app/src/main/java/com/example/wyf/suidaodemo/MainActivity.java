@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.wyf.suidaodemo.managepicture.ShowPictureFolderByDayActivity;
@@ -42,6 +43,10 @@ public class MainActivity extends AppCompatActivity {
     Button btn_manage_photo;
     @BindView(R.id.btn_search_photo)
     Button btn_search_photo;
+    @BindView(R.id.btn_top_back)
+    Button btn_top_back;
+    @BindView(R.id.tv_top_title)
+    TextView tv_top_title;
 
     // android 6.0 之后需要在运行时动态获取权限
     // 在此一次性获取多个权限
@@ -59,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        btn_top_back.setVisibility(View.INVISIBLE);
+        tv_top_title.setText("主页");
 
         context = this;
 
@@ -181,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         // 检测gps
-//        checkGps();
+        checkGps();
         super.onResume();
     }
 

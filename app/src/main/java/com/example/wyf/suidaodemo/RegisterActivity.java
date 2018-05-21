@@ -1,7 +1,6 @@
 package com.example.wyf.suidaodemo;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -27,16 +26,14 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class LoginActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity {
 
-    @BindView(R.id.et_username)
-    EditText et_username;
-    @BindView(R.id.et_password)
-    EditText et_password;
-    @BindView(R.id.btn_login)
-    Button btn_login;
-    @BindView(R.id.btn_register)
-    Button btn_register;
+    @BindView(R.id.et_username_r)
+    EditText et_username_r;
+    @BindView(R.id.et_password_r)
+    EditText et_password_r;
+    @BindView(R.id.btn_register_r)
+    Button btn_register_r;
     @BindView(R.id.btn_top_back)
     Button btn_top_back;
     @BindView(R.id.tv_top_title)
@@ -52,16 +49,15 @@ public class LoginActivity extends AppCompatActivity {
                 String message = (String) msg.obj;
                 Log.i("获取的返回信息", message);
                 final ResponseData data = new Gson().fromJson(message, ResponseData.class);
-                final ResponseData.UserEntity userEntity = data.getData();
+                final String msg1 = data.getMsg();
                 /***
                  * 在此处可以通过获取到的Msg值来判断
                  * 给出用户提示注册成功 与否，以及判断是否用户名已经存在
                  */
-                if (userEntity != null) {
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
+                if ("Success".equals(msg1)) {
+                    Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(LoginActivity.this, "登录失败", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, "注册失败", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -71,33 +67,26 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_register);
+
         ButterKnife.bind(this);
 
-        btn_top_back.setOnClickListener(new View.OnClickListener() {
+        tv_top_title.setText("注册");
+
+        btn_register_r.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
-            }
-        });
+                String username = et_username_r.getText().toString().trim();
+                String password = et_password_r.getText().toString().trim();
 
-        tv_top_title.setText("登录");
-
-        btn_login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String username = et_username.getText().toString().trim();
-                String password = et_password.getText().toString().trim();
-
+                //通过okhttp发起post请求
                 postRequest(username, password);
             }
         });
 
-        btn_register.setOnClickListener(new View.OnClickListener() {
+        btn_top_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(intent);
                 finish();
             }
         });
@@ -111,7 +100,7 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
         //发起请求
         final Request request = new Request.Builder()
-                .url("http://192.168.1.104:9999/app/login")
+                .url("http://192.168.1.104:9999/app/register")
                 .post(formBody)
                 .build();
         //新建一个线程，用于得到服务器响应的参数

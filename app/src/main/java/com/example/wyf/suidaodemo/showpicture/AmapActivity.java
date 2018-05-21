@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
@@ -67,6 +68,10 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
     MapView mMapView;
     @BindView(R.id.btn_showexif)
     Button btn_showexif;
+    @BindView(R.id.btn_top_back)
+    Button btn_top_back;
+    @BindView(R.id.tv_top_title)
+    TextView tv_top_title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +79,15 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
         setContentView(R.layout.activity_amap);
 
         ButterKnife.bind(this);
+
+        btn_top_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        tv_top_title.setText("照片检索");
 
         // 获取地图控件引用
         mMapView.onCreate(savedInstanceState);
@@ -117,6 +131,7 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
         List<MultiPointItem> list = new ArrayList<>();
         // 生成坐标点
         for (SuidaoInfoEntity entity : entities) {
+            Log.d(TAG, entity.getPiclatitude() + "  " + entity.getPiclongitude());
             double latitude = changeFromgRationalToGPS(entity.getPiclatitude());
             double longitude = changeFromgRationalToGPS(entity.getPiclongitude());
             Log.d(TAG, latitude + "  " + longitude);
@@ -193,6 +208,7 @@ public class AmapActivity extends AppCompatActivity implements LocationSource, A
             ExifInterface exifInterface = new ExifInterface(path);
             String lat = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
             String lon = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+            Log.d(TAG, lat + "  " + lon);
             double latitude = changeFromgRationalToGPS(lat);
             double longitude = changeFromgRationalToGPS(lon);
             Log.d(TAG, latitude + "  " + longitude);

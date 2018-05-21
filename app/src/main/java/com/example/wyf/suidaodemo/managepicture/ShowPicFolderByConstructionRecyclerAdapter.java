@@ -44,21 +44,6 @@ public class ShowPicFolderByConstructionRecyclerAdapter extends RecyclerView.Ada
                 context.startActivity(intent);
             }
         });
-
-//        Glide.with(context).load(urls.get(position))
-//                .asBitmap().placeholder(R.mipmap.ic_launcher)
-//                .error(R.mipmap.ic_launcher)
-//                .into(holder.iv);
-//
-//        holder.iv.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                String[] result = urls.get(position).split("thumbnail");
-//                Intent intent = new Intent(context, ShowOnePictureActivity.class);
-//                intent.putExtra("url", result[0] + result[2].substring(1, result[2].length()));
-//                context.startActivity(intent);
-//            }
-//        });
     }
 
     @Override

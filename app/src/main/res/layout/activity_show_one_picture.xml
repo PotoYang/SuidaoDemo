@@ -2,13 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center">
+    android:layout_gravity="center"
+    android:orientation="vertical">
 
     <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
         android:id="@+id/iv_one_picture"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="500dp"
         android:padding="20dp"
         android:scaleType="centerInside" />
+
+    <Button
+        android:id="@+id/btn_test_upload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="upload" />
 
 </LinearLayout>

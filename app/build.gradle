@@ -16,6 +16,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildToolsVersion '26.0.2'
 }
 
 dependencies {
@@ -29,7 +30,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    compile 'com.jph.takephoto:takephoto_library:4.0.3'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.amap.api:3dmap:6.0.1'
     compile 'com.amap.api:map2d:5.2.0'
     compile 'com.amap.api:location:3.8.0'
@@ -39,4 +40,6 @@ dependencies {
     compile 'com.j256.ormlite:ormlite-android:4.48'
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 
+    compile 'com.squareup.okhttp3:okhttp:3.9.0'
+    compile 'com.google.code.gson:gson:2.8.2'
 }

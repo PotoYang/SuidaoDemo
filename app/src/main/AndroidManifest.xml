@@ -26,14 +26,14 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
         <!-- 高德地图配置文件 -->
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="c3bb3a504ee1dd36175f88eb36aaddac" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,7 +41,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LoginActivity" />
+        <activity android:name=".MainActivity" />
         <activity
             android:name=".takepicture.MyTakePhotoActivity"
             android:windowSoftInputMode="stateHidden" />
@@ -52,6 +52,7 @@
         <activity android:name=".managepicture.ShowPictureFolderByDayActivity" />
         <activity android:name=".managepicture.ShowPictureFolderByConstructionActivity" />
         <activity android:name=".managepicture.ManagePicActivity" />
+        <activity android:name=".RegisterActivity" />
 
         <!-- 高德地图定位服务 -->
         <service android:name="com.amap.api.location.APSService" />
@@ -63,6 +64,16 @@
 
         <!-- 文件同步服务 -->
         <service android:name=".syncpicture.RecordUploadService" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.wyf.suidaodemo.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
     </application>
 
 </manifest>
